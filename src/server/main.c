@@ -31,6 +31,11 @@ struct Connection {
   int socket_fd;
 };
 
+struct CloseConnectionOperation {
+  size_t pollfds_index;
+  size_t connections_list_index;
+};
+
 static void child_handler(int s) {
   (void)s;
 
@@ -177,7 +182,7 @@ int server_loop(int socket_fd) {
     }
 
     struct vec indices_to_close;
-    vec_new(&indices_to_close, sizeof(int[2]));
+    vec_new(&indices_to_close, sizeof(struct CloseConnectionOperation));
     for (size_t i = 0; i < pollfds.len && num_events > 0; i++) {
       struct pollfd p = ((struct pollfd *)pollfds.buf)[i];
       if ((p.revents & POLLIN) != 0) {
@@ -185,9 +190,11 @@ int server_loop(int socket_fd) {
       }
 
       if ((p.revents & POLLRDHUP) != 0) {
-        int conn_list_index = find_connection_list_fd(&connections_list, p.fd);
-        int ele[2] = {i, conn_list_index};
-        vec_push(&indices_to_close, ele);
+        size_t conn_list_index =
+            find_connection_list_fd(&connections_list, p.fd);
+        struct CloseConnectionOperation op = {
+            .pollfds_index = i, .connections_list_index = conn_list_index};
+        vec_push(&indices_to_close, &op);
       }
 
       if (p.revents != 0) {
@@ -195,16 +202,20 @@ int server_loop(int socket_fd) {
       }
     }
 
-    for (int i = 0; i < indices_to_close.len; i++) {
-      int *indices = (int *)vec_get(&indices_to_close, i);
-      int fd = ((struct pollfd *)vec_get(&pollfds, indices[0]))->fd;
+    for (size_t i = 0; i < indices_to_close.len; i++) {
+      struct CloseConnectionOperation *op = vec_get(&indices_to_close, i);
+      size_t pollfds_index = op->pollfds_index;
+      size_t connections_list_index = op->connections_list_index;
+      int fd = ((struct pollfd *)vec_get(&pollfds, pollfds_index))->fd;
       ConnectionID id;
       memcpy(id,
-             ((struct Connection *)vec_get(&connections_list, indices[1]))->id,
+             ((struct Connection *)vec_get(&connections_list,
+                                           connections_list_index))
+                 ->id,
              sizeof id);
       close(fd);
-      vec_remove(&pollfds, indices[0]);
-      vec_remove(&connections_list, indices[1]);
+      vec_remove(&pollfds, pollfds_index);
+      vec_remove(&connections_list, connections_list_index);
       printf("closed connection for %s\n", id);
     }
 
