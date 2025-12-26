@@ -15,14 +15,14 @@ int main() {
     struct vec vec1;
     struct vec vec2;
 
-    int *buf1 = malloc(sizeof(test_array));
+    int *buf1 = (int *)malloc(sizeof(test_array));
     memcpy(buf1, test_array, sizeof(test_array));
     vec1.buf = buf1;
     vec1.capacity = 4;
     vec1.len = 4;
     vec1.element_size = sizeof(int);
 
-    int *buf2 = malloc(sizeof(test_array));
+    int *buf2 = (int *)malloc(sizeof(test_array));
     memcpy(buf2, test_array, sizeof(test_array));
     vec2.buf = buf2;
     vec2.capacity = 4;
@@ -66,7 +66,7 @@ int main() {
 
     struct vec vector;
 
-    int *buf = malloc(sizeof(test_array));
+    int *buf = (int *)malloc(sizeof(test_array));
     memcpy(buf, test_array, sizeof(test_array));
     vector.buf = buf;
     vector.capacity = 4;
