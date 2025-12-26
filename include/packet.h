@@ -1,5 +1,4 @@
 #ifndef PACKET_H
-
 #define PACKET_H
 
 #define MAX_DATA_SIZE sizeof(struct MessageData)
