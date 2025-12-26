@@ -152,6 +152,9 @@ int server_loop(int socket_fd) {
   struct vec connections_list;
   vec_new(&connections_list, sizeof(struct Connection));
 
+  //
+  // Create vector for sockets to poll
+  //
   struct vec pollfds;
   vec_new(&pollfds, sizeof(struct pollfd));
   struct pollfd listener;
@@ -160,13 +163,22 @@ int server_loop(int socket_fd) {
   listener.revents = 0;
   vec_push(&pollfds, &listener);
 
+  struct vec connections_to_close;
+  vec_new(&connections_to_close, sizeof(struct CloseConnectionOperation));
+
   while (1) {
+    //
+    // Wait for events to come through
+    //
     int num_events = poll(pollfds.buf, pollfds.len, -1);
     if (num_events == -1) {
       perror("poll");
       return 1;
     }
 
+    //
+    // Accept incoming connection and push it to the lists
+    //
     if ((((struct pollfd *)pollfds.buf)[0].revents & POLLIN) != 0) {
       struct Connection c;
       accept_and_create_connection(&connections_list, &c, socket_fd);
@@ -181,20 +193,24 @@ int server_loop(int socket_fd) {
       num_events -= 1;
     }
 
-    struct vec indices_to_close;
-    vec_new(&indices_to_close, sizeof(struct CloseConnectionOperation));
     for (size_t i = 0; i < pollfds.len && num_events > 0; i++) {
+      //
+      // Process packet
+      //
       struct pollfd p = ((struct pollfd *)pollfds.buf)[i];
       if ((p.revents & POLLIN) != 0) {
         handle_message(&connections_list, p.fd);
       }
 
+      //
+      // Queue connection for closing if they've hung up
+      //
       if ((p.revents & POLLRDHUP) != 0) {
         size_t conn_list_index =
             find_connection_list_fd(&connections_list, p.fd);
         struct CloseConnectionOperation op = {
             .pollfds_index = i, .connections_list_index = conn_list_index};
-        vec_push(&indices_to_close, &op);
+        vec_push(&connections_to_close, &op);
       }
 
       if (p.revents != 0) {
@@ -202,24 +218,29 @@ int server_loop(int socket_fd) {
       }
     }
 
-    for (size_t i = 0; i < indices_to_close.len; i++) {
-      struct CloseConnectionOperation *op = vec_get(&indices_to_close, i);
+    for (size_t i = 0; i < connections_to_close.len; i++) {
+      struct CloseConnectionOperation *op = vec_get(&connections_to_close, i);
       size_t pollfds_index = op->pollfds_index;
       size_t connections_list_index = op->connections_list_index;
-      int fd = ((struct pollfd *)vec_get(&pollfds, pollfds_index))->fd;
+
+      // Store ID so we can print it later
       ConnectionID id;
       memcpy(id,
              ((struct Connection *)vec_get(&connections_list,
                                            connections_list_index))
                  ->id,
              sizeof id);
-      close(fd);
+
+      // Close socket
+      int connection_fd =
+          ((struct pollfd *)vec_get(&pollfds, pollfds_index))->fd;
+      close(connection_fd);
+
       vec_remove(&pollfds, pollfds_index);
       vec_remove(&connections_list, connections_list_index);
+
       printf("closed connection for %s\n", id);
     }
-
-    vec_free(&indices_to_close);
   }
 
   close(socket_fd);
