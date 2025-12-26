@@ -32,6 +32,8 @@ struct Connection {
 };
 
 static void child_handler(int s) {
+  (void)s;
+
   while (waitpid(-1, NULL, WNOHANG) > 0) {
   }
 }
