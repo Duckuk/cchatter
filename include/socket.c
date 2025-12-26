@@ -61,8 +61,6 @@ static int get_socket_ip_generic(int socket_fd, char *restrict buf,
   return -1;
 }
 
-// Returns a socket fd that connects to the given ip address and port or -1 if
-// there was an error
 int connect_client_socket(char *restrict ip_address, char *restrict port) {
   struct addrinfo req;
   memset(&req, 0, sizeof req);
@@ -105,9 +103,6 @@ int connect_client_socket(char *restrict ip_address, char *restrict port) {
   return socket_fd;
 }
 
-// Returns a socket fd that is connected to the given ip address and port,
-// otherwise returns -1 and sets errno.
-// Note that `listen` will need to be called separately.
 int bind_server_socket(char *restrict ip_address, char *restrict port) {
   struct addrinfo req;
   memset(&req, 0, sizeof req);
@@ -151,25 +146,18 @@ int bind_server_socket(char *restrict ip_address, char *restrict port) {
   return socket_fd;
 }
 
-// Returns 0 on success and puts the ip in buf, otherwise returns -1 and sets
-// errno
 int get_socket_ip(int socket_fd, char *restrict buf, size_t buf_len) {
   return get_socket_ip_generic(socket_fd, buf, buf_len, getsockname);
 }
 
-// Returns the socket's port on success, otherwise returns -1 and sets errno
 int get_socket_port(int socket_fd) {
   return get_socket_port_generic(socket_fd, getsockname);
 }
 
-// Returns 0 on success and puts the ip in buf, otherwise returns -1 and sets
-// errno
 int get_socket_peer_ip(int socket_fd, char *restrict buf, size_t buf_len) {
   return get_socket_ip_generic(socket_fd, buf, buf_len, getpeername);
 }
 
-// Returns the port of the socket's peer on success, otherwise returns -1 and
-// sets errno
 int get_socket_peer_port(int socket_fd) {
   return get_socket_port_generic(socket_fd, getpeername);
 }
