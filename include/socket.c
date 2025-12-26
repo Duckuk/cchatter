@@ -10,9 +10,9 @@
 
 // Generic function to get socket port from either host or peer.
 // `func` should be either `getsockname` or `getpeername`.
-int get_socket_port_generic(int socket_fd,
-                            int (*func)(int, struct sockaddr *restrict,
-                                        socklen_t *restrict)) {
+static int get_socket_port_generic(int socket_fd,
+                                   int (*func)(int, struct sockaddr *restrict,
+                                               socklen_t *restrict)) {
   struct sockaddr storage;
   socklen_t storage_len = sizeof(storage);
   if (func(socket_fd, &storage, &storage_len) == -1) {
@@ -35,9 +35,10 @@ int get_socket_port_generic(int socket_fd,
 
 // Generic function to get socket ip from either host or peer.
 // `func` should be either `getsockname` or `getpeername`.
-int get_socket_ip_generic(int socket_fd, char *restrict buf, size_t buf_len,
-                          int (*func)(int, struct sockaddr *restrict,
-                                      socklen_t *restrict)) {
+static int get_socket_ip_generic(int socket_fd, char *restrict buf,
+                                 size_t buf_len,
+                                 int (*func)(int, struct sockaddr *restrict,
+                                             socklen_t *restrict)) {
   struct sockaddr storage;
   socklen_t storage_len = sizeof(storage);
   if (func(socket_fd, &storage, &storage_len) == -1) {
