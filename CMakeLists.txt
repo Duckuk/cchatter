@@ -5,7 +5,7 @@ project(Networking
     LANGUAGES C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(DEFAULT_FLAGS "-Wall -Wextra")
+set(DEFAULT_FLAGS "-Wall" "-Wextra")
 
 # Library
 add_library(network)
