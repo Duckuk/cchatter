@@ -5,7 +5,7 @@ project(Networking
     LANGUAGES C)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(DEFAULT_FLAGS "-Weverything -Wno-switch-enum -Wno-declaration-after-statement -Wno-jump-misses-init -Wno-unsafe-buffer-usage")
+set(DEFAULT_FLAGS "-Weverything -Wno-switch-enum -Wno-declaration-after-statement -Wno-jump-misses-init -Wno-unsafe-buffer-usage -Wno-cast-qual")
 
 # Library
 add_library(network)
