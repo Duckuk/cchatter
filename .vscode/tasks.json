@@ -8,7 +8,7 @@
             "args": [
                 "--pure",
                 "--run",
-                "cmake -DCMAKE_BUILD_TYPE=debug -S \"${workspaceFolder}\" -B \"${workspaceFolder}/build/debug\" && cmake --build \"${workspaceFolder}/build/debug\" --parallel 6"
+                "cmake -DCMAKE_BUILD_TYPE=debug -DCMAKE_C_FLAGS_DEBUG=\"-g -O0\" -S \"${workspaceFolder}\" -B \"${workspaceFolder}/build/debug\" && cmake --build \"${workspaceFolder}/build/debug\" --parallel 6"
             ],
             "problemMatcher": [],
             "group": {
@@ -23,7 +23,7 @@
             "args": [
                 "--pure",
                 "--run",
-                "cmake -DCMAKE_BUILD_TYPE=debug -S \"${workspaceFolder}\" -B \"${workspaceFolder}/build/debug\" && cmake --build \"${workspaceFolder}/build/debug\" --parallel 6 --target client"
+                "cmake -DCMAKE_BUILD_TYPE=debug -DCMAKE_C_FLAGS_DEBUG=\"-g -O0\" -S \"${workspaceFolder}\" -B \"${workspaceFolder}/build/debug\" && cmake --build \"${workspaceFolder}/build/debug\" --parallel 6 --target client"
             ]
         },
         {
@@ -33,7 +33,7 @@
             "args": [
                 "--pure",
                 "--run",
-                "cmake -DCMAKE_BUILD_TYPE=debug -S \"${workspaceFolder}\" -B \"${workspaceFolder}/build/debug\" && cmake --build \"${workspaceFolder}/build/debug\" --parallel 6 --target server"
+                "cmake -DCMAKE_BUILD_TYPE=debug -DCMAKE_C_FLAGS_DEBUG=\"-g -O0\" -S \"${workspaceFolder}\" -B \"${workspaceFolder}/build/debug\" && cmake --build \"${workspaceFolder}/build/debug\" --parallel 6 --target server"
             ]
         },
         {
