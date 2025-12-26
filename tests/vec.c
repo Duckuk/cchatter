@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// NOLINTNEXTLINE
 int main() {
   //
   // `vec_eq` test
