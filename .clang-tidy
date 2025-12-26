@@ -1,0 +1,1 @@
+Checks: "-*,clang-analyzer-*,bugprone-*,concurrency-*,modernize-*,performance-*,portability-*,readability-*,-readability-identifier-length"

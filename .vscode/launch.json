@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug client",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/debug/client",
+            "args": [],
+            "cwd": "${workspaceRoot}/build/debug",
+            "preLaunchTask": "Build debug client"
+        },
+        {
+            "name": "Debug server",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/debug/server",
+            "args": [],
+            "cwd": "${workspaceRoot}/build/debug",
+            "preLaunchTask": "Build debug server"
+        }
+    ]
+}

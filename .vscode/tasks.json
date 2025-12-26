@@ -1,0 +1,50 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build debug all",
+            "type": "shell",
+            "command": "nix-shell",
+            "args": [
+                "--pure",
+                "--run",
+                "cmake -DCMAKE_BUILD_TYPE=debug -S \"${workspaceFolder}\" -B \"${workspaceFolder}/build/debug\" && cmake --build \"${workspaceFolder}/build/debug\" --parallel 6"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build debug client",
+            "type": "shell",
+            "command": "nix-shell",
+            "args": [
+                "--pure",
+                "--run",
+                "cmake -DCMAKE_BUILD_TYPE=debug -S \"${workspaceFolder}\" -B \"${workspaceFolder}/build/debug\" && cmake --build \"${workspaceFolder}/build/debug\" --parallel 6 --target client"
+            ]
+        },
+        {
+            "label": "Build debug server",
+            "type": "shell",
+            "command": "nix-shell",
+            "args": [
+                "--pure",
+                "--run",
+                "cmake -DCMAKE_BUILD_TYPE=debug -S \"${workspaceFolder}\" -B \"${workspaceFolder}/build/debug\" && cmake --build \"${workspaceFolder}/build/debug\" --parallel 6 --target server"
+            ]
+        },
+        {
+            "label": "Build release all",
+            "type": "shell",
+            "command": "nix-shell",
+            "args": [
+                "--pure",
+                "--run",
+                "cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -S \"${workspaceFolder}\" -B \"${workspaceFolder}/build/release\" && cmake --build \"${workspaceFolder}/build/release\" --parallel 6"
+            ]
+        }
+    ]
+}
