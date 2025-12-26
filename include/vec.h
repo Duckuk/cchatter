@@ -23,7 +23,7 @@ void vec_from_array(struct vec *vec, size_t size_of_elements, void *array,
 // Sets the internal capacity of `vec` to `new_capacity`
 void vec_set_capacity(struct vec *vec, size_t new_capacity);
 
-// Pushes `element` onto the end of `vec`
+// Pushes `element` onto the end of `vec` via `memcpy`
 void vec_push(struct vec *vec, void *element);
 
 // Sets `index` of `vec` to `element`
