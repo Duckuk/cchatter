@@ -38,23 +38,23 @@ static void child_handler(int s) {
   }
 }
 
-static int find_connection_list_fd(struct vec *connection_list, int fd) {
+static ssize_t find_connection_list_fd(struct vec *connection_list, int fd) {
   for (size_t i = 0; i < connection_list->len; i++) {
     if (((struct Connection *)vec_get(connection_list, i))->socket_fd == fd) {
-      return i;
+      return (ssize_t)i;
     }
   }
 
   return -1;
 }
 
-static int find_connection_list_id(struct vec *connection_list,
-                                   ConnectionID id) {
+static ssize_t find_connection_list_id(struct vec *connection_list,
+                                       ConnectionID id) {
   for (size_t i = 0; i < connection_list->len; i++) {
     ConnectionID *this_id =
         &((struct Connection *)vec_get(connection_list, i))->id;
     if (strcmp(*this_id, id) == 0) {
-      return i;
+      return (ssize_t)i;
     }
   }
 
