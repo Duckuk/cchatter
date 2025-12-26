@@ -243,6 +243,10 @@ int server_loop(int socket_fd) {
     }
   }
 
+  vec_free(&connections_to_close);
+  vec_free(&pollfds);
+  vec_free(&connections_list);
+
   close(socket_fd);
 
   return 0;
