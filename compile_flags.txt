@@ -1,6 +1,2 @@
--Weverything
--Wno-switch-enum
--Wno-declaration-after-statement
--Wno-jump-misses-init
--Wno-unsafe-buffer-usage
--Wno-cast-qual
+-Wall
+-Wextra
