@@ -5,7 +5,7 @@
             "name": "Debug client",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceRoot}/build/debug/client",
+            "program": "${workspaceRoot}/build/debug/cchat-client",
             "args": [],
             "cwd": "${workspaceRoot}/build/debug",
             "preLaunchTask": "Build debug client"
@@ -14,7 +14,7 @@
             "name": "Debug server",
             "type": "lldb",
             "request": "launch",
-            "program": "${workspaceRoot}/build/debug/server",
+            "program": "${workspaceRoot}/build/debug/cchat-server",
             "args": [],
             "cwd": "${workspaceRoot}/build/debug",
             "preLaunchTask": "Build debug server"

@@ -6,7 +6,7 @@
     }) {},
 }:
 pkgs.clangStdenv.mkDerivation {
-  name = "networking-shell";
+  name = "cchatter-shell";
   nativeBuildInputs = with pkgs; [
     clang-tools
     clang
