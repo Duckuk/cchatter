@@ -9,7 +9,6 @@ pkgs.clangStdenv.mkDerivation {
   name = "cchatter-shell";
   nativeBuildInputs = with pkgs; [
     alejandra
-    clang
     clang-tools
     cmake
     git
