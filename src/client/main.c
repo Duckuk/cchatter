@@ -17,9 +17,13 @@
 #define ADDRESS "127.0.0.1"
 #define PORT "7465"
 
+static int server_socket = -1;
+
 struct UserInfo {
   ConnectionID id;
 };
+
+static void exit_func(void) { close(server_socket); }
 
 static int handle_message(int fd, struct UserInfo user) {
   struct Packet packet;
@@ -45,20 +49,25 @@ static int handle_message(int fd, struct UserInfo user) {
 int main(void) {
   const struct UserInfo user = {.id = "test-client-1"};
 
-  int socket_fd = connect_client_socket(ADDRESS, PORT);
-
-  if (socket_fd == -1) {
+  server_socket = connect_client_socket(ADDRESS, PORT);
+  if (server_socket == -1) {
     perror("connect_client_socket");
     return EXIT_FAILURE;
   }
 
+  int error = atexit(exit_func);
+  if (error != 0) {
+    fprintf(stderr, "error: atexit: %d", error);
+    return EXIT_FAILURE;
+  }
+
   char ip_str[INET6_ADDRSTRLEN];
-  if (get_socket_peer_ip(socket_fd, ip_str, sizeof ip_str) != 0) {
+  if (get_socket_peer_ip(server_socket, ip_str, sizeof ip_str) != 0) {
     perror("get_socket_peer_ip");
     return EXIT_FAILURE;
   }
 
-  int port = get_socket_peer_port(socket_fd);
+  int port = get_socket_peer_port(server_socket);
   if (port == -1) {
     perror("get_socket_peer_port");
     return EXIT_FAILURE;
@@ -71,10 +80,10 @@ int main(void) {
   memcpy(&data.new_id, user.id, sizeof(data.new_id));
   memcpy(&packet.data, &data, sizeof data);
 
-  send(socket_fd, &packet, sizeof(packet), 0);
+  send(server_socket, &packet, sizeof(packet), 0);
 
   struct pollfd poller;
-  poller.fd = socket_fd;
+  poller.fd = server_socket;
   poller.events = POLLIN | POLLRDHUP;
   poller.revents = 0;
   struct pollfd pollfds[1] = {poller};
@@ -82,20 +91,19 @@ int main(void) {
     int num_events = poll(pollfds, 1, -1);
     if (num_events == -1) {
       perror("poll");
-      return 1;
+      return EXIT_FAILURE;
     }
 
     if (pollfds[0].revents & POLLIN) {
       handle_message(pollfds[0].fd, user);
-      close(pollfds[0].fd);
-      break;
     }
 
     if (pollfds[0].revents & POLLRDHUP) {
-      close(pollfds[0].fd);
       break;
     }
   }
+
+  close(pollfds[0].fd);
 
   return 0;
 }
