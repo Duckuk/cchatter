@@ -140,7 +140,7 @@ int bind_server_socket(char *restrict ip_address, char *restrict port) {
   if (addr_p == NULL) {
     close(socket_fd);
     errno = EADDRNOTAVAIL;
-    return 1;
+    return -1;
   }
 
   return socket_fd;
