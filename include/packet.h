@@ -23,7 +23,9 @@ struct Packet {
   char data[MAX_DATA_SIZE];
 };
 
+// Receives a packet over the socket `fd` and puts it in `packet`.
 int receive_packet(int fd, struct Packet *packet);
+// Sends `packet` over the socket `fd`.
 int send_packet(int fd, struct Packet *packet);
 
 int send_message(int fd, ConnectionID from, ConnectionID to,
