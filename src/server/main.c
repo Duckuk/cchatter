@@ -121,18 +121,18 @@ static int handle_message(struct vec *connections_list, int fd) {
   case SET_ID:;
     printf("received set id request\n");
 
-    struct SetIDData *data = (struct SetIDData *)packet.data;
+    struct SetIDData *id_data = (struct SetIDData *)packet.data;
 
-    if (find_connection_list_id(connections_list, data->new_id) != -1) {
-      fprintf(stderr, "%s already in use!\n", data->new_id);
+    if (find_connection_list_id(connections_list, id_data->new_id) != -1) {
+      fprintf(stderr, "%s already in use!\n", id_data->new_id);
       return -1;
     }
 
     ConnectionID old_id;
     memcpy(old_id, conn->id, sizeof old_id);
 
-    printf("setting id of %s to %s\n", conn->id, data->new_id);
-    memcpy(conn->id, data->new_id, sizeof conn->id);
+    printf("setting id of %s to %s\n", conn->id, id_data->new_id);
+    memcpy(conn->id, id_data->new_id, sizeof conn->id);
 
     MessageContent content;
     sprintf(content, "set id from %s to %s", old_id, conn->id);
@@ -141,7 +141,28 @@ static int handle_message(struct vec *connections_list, int fd) {
     break;
 
   case MESSAGE:;
-    fprintf(stderr, "MESSAGE forwarding not implemented");
+    struct MessageData *message_data = (struct MessageData *)packet.data;
+
+    if (find_connection_list_id(connections_list, message_data->from)) {
+      fprintf(stderr, "invalid message from field\n");
+      return -1;
+    }
+
+    ssize_t connection_index =
+        find_connection_list_id(connections_list, message_data->to);
+    if (connection_index == -1) {
+      fprintf(stderr, "invalid message to field\n");
+      return -1;
+    }
+
+    printf("sending message from '%s' to '%s'\n", message_data->from,
+           message_data->to);
+
+    send_packet(
+        ((struct Connection *)vec_get(connections_list, connection_index))
+            ->socket_fd,
+        &packet);
+
     break;
   }
 

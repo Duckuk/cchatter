@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/param.h>
 #include <sys/socket.h>
 #include <unistd.h>
 
@@ -47,7 +48,12 @@ static int handle_message(int fd, struct UserInfo user) {
 }
 
 int main(void) {
-  const struct UserInfo user = {.id = "test-client-1"};
+  struct UserInfo user;
+  {
+    memset(&user, 0, sizeof user);
+    char id[] = "test-client-1";
+    memcpy(&user.id, id, MIN(sizeof user.id, sizeof id));
+  }
 
   server_socket = connect_client_socket(ADDRESS, PORT);
   if (server_socket == -1) {
@@ -81,6 +87,8 @@ int main(void) {
   memcpy(&packet.data, &data, sizeof data);
 
   send(server_socket, &packet, sizeof(packet), 0);
+
+  send_message(server_socket, user.id, user.id, "Test message");
 
   struct pollfd poller;
   poller.fd = server_socket;
