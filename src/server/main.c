@@ -124,7 +124,7 @@ static int handle_message(struct vec *connections_list, int fd) {
     struct SetIDData *data = (struct SetIDData *)packet.data;
 
     if (find_connection_list_id(connections_list, data->new_id) != -1) {
-      printf("%s already in use!\n", data->new_id);
+      fprintf(stderr, "%s already in use!\n", data->new_id);
       return -1;
     }
 
