@@ -84,6 +84,13 @@ int connect_client_socket(char *restrict ip_address, char *restrict port) {
       continue;
     }
 
+    int yes = 1;
+    if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) ==
+        -1) {
+      perror("setsockopt");
+      return -1;
+    }
+
     if (connect(socket_fd, addr_p->ai_addr, addr_p->ai_addrlen) != 0) {
       close(socket_fd);
       continue;
@@ -125,6 +132,13 @@ int bind_server_socket(char *restrict ip_address, char *restrict port) {
         socket(addr_p->ai_family, addr_p->ai_socktype, addr_p->ai_protocol);
     if (socket_fd == -1) {
       continue;
+    }
+
+    int yes = 1;
+    if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) ==
+        -1) {
+      perror("setsockopt");
+      return -1;
     }
 
     if (bind(socket_fd, addr_p->ai_addr, addr_p->ai_addrlen) != 0) {
