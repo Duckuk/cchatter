@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <stddef.h>
 
-size_t hash(void *restrict buf, size_t buf_size) { assert(0); }
+size_t hash(void *restrict buf, size_t buf_size);
 
 struct hash_table {};
 
