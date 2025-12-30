@@ -18,6 +18,15 @@
             "args": [],
             "cwd": "${workspaceRoot}/build/debug",
             "preLaunchTask": "Build debug server"
+        },
+        {
+            "name": "Debug test",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/debug/hash_table_test",
+            "args": [],
+            "cwd": "${workspaceRoot}/build/debug",
+            "preLaunchTask": "Build debug all"
         }
     ]
 }
