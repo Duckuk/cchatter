@@ -14,6 +14,7 @@ target_sources(cchat
         include/vec.c
         include/packet.c
         include/socket.c
+        include/hash_table.c
     
     PUBLIC
         FILE_SET HEADERS
@@ -23,6 +24,7 @@ target_sources(cchat
             include/vec.h
             include/packet.h
             include/socket.h
+            include/hash_table.h
 )
 target_compile_options(cchat
     PRIVATE
@@ -62,3 +64,9 @@ target_link_libraries(vec_test
     PRIVATE
         cchat)
 add_test(NAME vec_test COMMAND vec_test)
+
+add_executable(hash_table_test tests/hash_table.c)
+target_link_libraries(hash_table_test
+    PRIVATE
+        cchat)
+add_test(NAME hash_table_test COMMAND hash_table_test)
