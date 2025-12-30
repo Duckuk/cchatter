@@ -1,7 +1,7 @@
 #include "../include/hash_table.h"
 
 int main() {
-  struct hash_table table;
+  struct HashTable table;
   hash_table_new(&table, sizeof(char[32]), sizeof(int));
 
   for (size_t i = 0; i < table.capacity; i++) {

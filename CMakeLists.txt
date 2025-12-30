@@ -42,7 +42,8 @@ target_compile_options(cchat-client
 add_executable(cchat-server)
 target_sources(cchat-server
     PRIVATE
-        src/server/main.c)
+        src/server/main.c
+        src/server/connection.c)
 target_compile_options(cchat-server
     PRIVATE
         ${DEFAULT_FLAGS})

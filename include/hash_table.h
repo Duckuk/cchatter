@@ -5,7 +5,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct hash_table {
+#define ASSERT_HASH_TABLE_TYPES(table, key_type, element_type)                 \
+  assert(table->key_size == sizeof(key_type));                                 \
+  assert(table->element_size == sizeof(element_type));
+
+struct HashTable {
   // PRIVATE DO NOT TOUCH
   void **_buffer;
   // READ-ONLY
@@ -28,21 +32,30 @@ double calculate_collision_rate();
 
 // Initialize new hash table with default capacity (1024).
 // Return 0 on success, otherwise returns -1
-int hash_table_new(struct hash_table *restrict table, size_t key_size,
+[[nodiscard]]
+int hash_table_new(struct HashTable *restrict table, size_t key_size,
                    size_t element_size);
-// Set `key` to `element` in `table`.
+// Set `key` to `element` in `table` via `memcpy`.
 // Return 0 on success, otherwise returns -1
-int hash_table_set(struct hash_table *restrict table, void *restrict key,
+[[nodiscard]]
+int hash_table_set(struct HashTable *restrict table, void *restrict key,
                    void *restrict element);
+// Set `key` to `element` in `table` via direct assignment to pointer.
+// Return 0 on success, otherwise returns -1
+[[nodiscard]]
+int hash_table_set_ptr(struct HashTable *restrict table, void *restrict key,
+                       void *restrict element);
 // Delete `key` from `table`.
 // Return 0 on success, otherwise returns -1
-int hash_table_remove(struct hash_table *restrict table, void *restrict key);
+[[nodiscard]]
+int hash_table_remove(struct HashTable *restrict table, void *restrict key);
 // Get `key` from `table`.
-// Return 0 on success, otherwise returns -1
-void *hash_table_get(struct hash_table *restrict table, void *restrict key);
+// Return 0 on success, otherwise returns `NULL`
+[[nodiscard]]
+void *hash_table_get(struct HashTable *restrict table, void *restrict key);
 
-size_t hash_table_length(struct hash_table *restrict table);
+size_t hash_table_length(struct HashTable *restrict table);
 
-void hash_table_free(struct hash_table *restrict table);
+void hash_table_free(struct HashTable *restrict table);
 
 #endif

@@ -56,7 +56,7 @@ double calculate_collision_rate() {
   return collisions / (double)TEST_SIZE;
 }
 
-int hash_table_new(struct hash_table *restrict table, size_t key_size,
+int hash_table_new(struct HashTable *restrict table, size_t key_size,
                    size_t element_size) {
   memset(table, 0, sizeof *table);
 
@@ -75,7 +75,7 @@ int hash_table_new(struct hash_table *restrict table, size_t key_size,
   return 0;
 }
 
-int hash_table_set(struct hash_table *restrict table, void *restrict key,
+int hash_table_set(struct HashTable *restrict table, void *restrict key,
                    void *restrict element) {
   size_t hash = table->_hash_func(key, table->key_size) % table->capacity;
   if (table->_buffer[hash] != NULL) {
@@ -85,6 +85,7 @@ int hash_table_set(struct hash_table *restrict table, void *restrict key,
 
   table->_buffer[hash] = malloc(table->element_size);
   if (table->_buffer[hash] == NULL) {
+    fprintf(stderr, "hash table allocation failed\n");
     return -1;
   }
   memcpy(table->_buffer[hash], element, table->element_size);
@@ -93,7 +94,23 @@ int hash_table_set(struct hash_table *restrict table, void *restrict key,
   return 0;
 }
 
-int hash_table_remove(struct hash_table *restrict table, void *restrict key) {
+int hash_table_set_ptr(struct HashTable *restrict table, void *restrict key,
+                       void *restrict ptr) {
+  assert(ptr != NULL);
+
+  size_t hash = table->_hash_func(key, table->key_size) % table->capacity;
+  if (table->_buffer[hash] != NULL) {
+    fprintf(stderr, "hash table collisions not yet handled\n");
+    return -1;
+  }
+
+  table->_buffer[hash] = ptr;
+  table->len += 1;
+
+  return 0;
+}
+
+int hash_table_remove(struct HashTable *restrict table, void *restrict key) {
   size_t hash = table->_hash_func(key, table->key_size) % table->capacity;
   if (table->_buffer[hash] == NULL) {
     fprintf(stderr, "invalid hash table key\n");
@@ -107,7 +124,7 @@ int hash_table_remove(struct hash_table *restrict table, void *restrict key) {
   return 0;
 }
 
-void *hash_table_get(struct hash_table *restrict table, void *restrict key) {
+void *hash_table_get(struct HashTable *restrict table, void *restrict key) {
   size_t hash = table->_hash_func(key, table->key_size) % table->capacity;
   if (table->_buffer[hash] == NULL) {
     fprintf(stderr, "invalid hash table key\n");
@@ -117,11 +134,7 @@ void *hash_table_get(struct hash_table *restrict table, void *restrict key) {
   return table->_buffer[hash];
 }
 
-size_t hash_table_length(struct hash_table *restrict table) {
-  return table->len;
-}
-
-void hash_table_free(struct hash_table *restrict table) {
+void hash_table_free(struct HashTable *restrict table) {
   for (size_t i = 0; i < table->capacity; i++) {
     free(table->_buffer[i]);
   }

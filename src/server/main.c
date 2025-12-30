@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 
+#include "../../include/hash_table.h"
 #include "../../include/packet.h"
 #include "../../include/socket.h"
 #include "../../include/vec.h"
@@ -19,21 +20,17 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "connection.h"
+
 #define ADDRESS "127.0.0.1"
 #define PORT "7465"
 #define BACKLOG 10
 
 #define MAX_CONNECTIONS 1024
 
-struct Connection {
-  ConnectionID id;
-  struct sockaddr_storage socket_address;
-  int socket_fd;
-};
-
 struct CloseConnectionOperation {
   size_t pollfds_index;
-  size_t connections_list_index;
+  struct Connection *connections_table_key;
 };
 
 static void child_handler(int s) {
@@ -66,8 +63,9 @@ static ssize_t find_connection_list_id(struct vec *connection_list,
   return -1;
 }
 
-static int accept_and_create_connection(struct vec *connections_list,
-                                        struct Connection *c, int socket_fd) {
+static int
+accept_and_create_connection(struct ConnectionTable *connections_table,
+                             struct Connection *c, int socket_fd) {
   struct sockaddr_storage client_address;
   unsigned int size = sizeof client_address;
   int client_fd = accept(socket_fd, (struct sockaddr *)&client_address, &size);
@@ -92,11 +90,12 @@ static int accept_and_create_connection(struct vec *connections_list,
   c->socket_address = client_address;
   c->socket_fd = client_fd;
 
+  // Generate random id and make sure it doesn't conflict with existing ID
   srandom(time(NULL));
   ConnectionID id;
   while (1) {
     sprintf(id, "%.8lx", (unsigned long)random());
-    if (find_connection_list_id(connections_list, id) == -1) {
+    if (connection_table_get_by_id(connections_table, id) == NULL) {
       break;
     }
   }
@@ -106,10 +105,8 @@ static int accept_and_create_connection(struct vec *connections_list,
   return 0;
 }
 
-static int handle_message(struct vec *connections_list, int fd) {
-  struct Connection *conn =
-      vec_get(connections_list,
-              (unsigned long)find_connection_list_fd(connections_list, fd));
+static int handle_message(struct ConnectionTable *connections_table, int fd) {
+  struct Connection *conn = connection_table_get_by_fd(connections_table, fd);
 
   struct Packet packet;
 
@@ -123,7 +120,8 @@ static int handle_message(struct vec *connections_list, int fd) {
 
     struct SetIDData *id_data = (struct SetIDData *)packet.data;
 
-    if (find_connection_list_id(connections_list, id_data->new_id) != -1) {
+    if (connection_table_get_by_id(connections_table, id_data->new_id) !=
+        NULL) {
       fprintf(stderr, "%s already in use!\n", id_data->new_id);
       return -1;
     }
@@ -143,14 +141,15 @@ static int handle_message(struct vec *connections_list, int fd) {
   case MESSAGE:;
     struct MessageData *message_data = (struct MessageData *)packet.data;
 
-    if (find_connection_list_id(connections_list, message_data->from)) {
+    if (connection_table_get_by_id(connections_table, message_data->from) ==
+        NULL) {
       fprintf(stderr, "invalid message from field\n");
       return -1;
     }
 
-    ssize_t connection_index =
-        find_connection_list_id(connections_list, message_data->to);
-    if (connection_index == -1) {
+    struct Connection *receipient =
+        connection_table_get_by_id(connections_table, message_data->to);
+    if (receipient == NULL) {
       fprintf(stderr, "invalid message to field\n");
       return -1;
     }
@@ -158,10 +157,7 @@ static int handle_message(struct vec *connections_list, int fd) {
     printf("sending message from '%s' to '%s'\n", message_data->from,
            message_data->to);
 
-    send_packet(
-        ((struct Connection *)vec_get(connections_list, connection_index))
-            ->socket_fd,
-        &packet);
+    send_packet(receipient->socket_fd, &packet);
 
     break;
   }
@@ -170,8 +166,14 @@ static int handle_message(struct vec *connections_list, int fd) {
 }
 
 int server_loop(int socket_fd) {
-  struct vec connections_list;
-  vec_new(&connections_list, sizeof(struct Connection));
+  // struct vec connections_list;
+  // vec_new(&connections_list, sizeof(struct Connection));
+
+  struct ConnectionTable connections_table;
+  if (connection_table_new(&connections_table) == -1) {
+    perror("connection_table_new");
+    return EXIT_FAILURE;
+  }
 
   //
   // Create vector for sockets to poll
@@ -194,7 +196,7 @@ int server_loop(int socket_fd) {
     int num_events = poll(pollfds.buf, pollfds.len, -1);
     if (num_events == -1) {
       perror("poll");
-      return 1;
+      return EXIT_FAILURE;
     }
 
     //
@@ -202,8 +204,10 @@ int server_loop(int socket_fd) {
     //
     if ((((struct pollfd *)pollfds.buf)[0].revents & POLLIN) != 0) {
       struct Connection c;
-      accept_and_create_connection(&connections_list, &c, socket_fd);
-      vec_push(&connections_list, &c);
+      accept_and_create_connection(&connections_table, &c, socket_fd);
+      if (connection_table_add(&connections_table, &c) == -1) {
+        return EXIT_FAILURE;
+      }
 
       struct pollfd p;
       p.fd = c.socket_fd;
@@ -220,17 +224,17 @@ int server_loop(int socket_fd) {
       //
       struct pollfd p = ((struct pollfd *)pollfds.buf)[i];
       if ((p.revents & POLLIN) != 0) {
-        handle_message(&connections_list, p.fd);
+        handle_message(&connections_table, p.fd);
       }
 
       //
       // Queue connection for closing if they've hung up
       //
       if ((p.revents & POLLRDHUP) != 0) {
-        size_t conn_list_index =
-            find_connection_list_fd(&connections_list, p.fd);
         struct CloseConnectionOperation op = {
-            .pollfds_index = i, .connections_list_index = conn_list_index};
+            .pollfds_index = i,
+            .connections_table_key =
+                connection_table_get_by_fd(&connections_table, p.fd)};
         vec_push(&connections_to_close, &op);
       }
 
@@ -242,15 +246,11 @@ int server_loop(int socket_fd) {
     for (size_t i = 0; i < connections_to_close.len; i++) {
       struct CloseConnectionOperation *op = vec_get(&connections_to_close, i);
       size_t pollfds_index = op->pollfds_index;
-      size_t connections_list_index = op->connections_list_index;
+      struct Connection *connection = op->connections_table_key;
 
       // Store ID so we can print it later
       ConnectionID id;
-      memcpy(id,
-             ((struct Connection *)vec_get(&connections_list,
-                                           connections_list_index))
-                 ->id,
-             sizeof id);
+      memcpy(id, connection->id, sizeof id);
 
       // Close socket
       int connection_fd =
@@ -258,7 +258,7 @@ int server_loop(int socket_fd) {
       close(connection_fd);
 
       vec_remove(&pollfds, pollfds_index);
-      vec_remove(&connections_list, connections_list_index);
+      connection_table_remove(&connections_table, connection);
 
       printf("closed connection for %s\n", id);
     }
@@ -266,11 +266,11 @@ int server_loop(int socket_fd) {
 
   vec_free(&connections_to_close);
   vec_free(&pollfds);
-  vec_free(&connections_list);
+  connection_table_free(&connections_table);
 
   close(socket_fd);
 
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 int main() {
