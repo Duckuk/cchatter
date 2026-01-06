@@ -26,7 +26,7 @@ void connection_table_set_id(struct ConnectionTable *table,
 
   memcpy(conn->id, new_id, sizeof conn->id);
 
-  hash_table_move(table, old_id, new_id);
+  hash_table_move(&table->table_by_id, old_id, new_id);
 }
 
 int connection_table_remove(struct ConnectionTable *table,

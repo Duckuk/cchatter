@@ -37,16 +37,26 @@ int main() {
   // Test that we can't set the same element twice
   hash_table_set(&table, test_key, &test_element);
   expect_termination(hash_table_set(&table, test_key, &test_element));
+  assert(table.len == 1);
 
   // Test that we can retrieve the element
-  assert(*(int *)hash_table_get(&table, test_key) == 8);
+  assert(*(int *)hash_table_get(&table, test_key) == test_element);
+
+  // Test that the move succeeds
+  char test_key_new[32] = "test-key-2";
+  assert(hash_table_move(&table, test_key, test_key_new) == 0);
+  assert(hash_table_move(&table, test_key, test_key_new) == -1);
+  assert(hash_table_get(&table, test_key) == NULL);
+  assert(*(int *)hash_table_get(&table, test_key_new) == test_element);
+  assert(table.len == 1);
 
   // Test that we can't remove the same element twice
-  assert(hash_table_remove(&table, test_key) == 0);
-  assert(hash_table_remove(&table, test_key) == -1);
+  assert(hash_table_remove(&table, test_key_new) == 0);
+  assert(hash_table_remove(&table, test_key_new) == -1);
+  assert(table.len == 0);
 
   // Test that the remove worked
-  assert(hash_table_get(&table, test_key) == NULL);
+  assert(hash_table_get(&table, test_key_new) == NULL);
 
   hash_table_free(&table);
 }

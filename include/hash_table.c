@@ -108,6 +108,8 @@ int hash_table_move(struct HashTable *restrict table, void *restrict key,
   }
   table->_buffer[old_hash] = NULL;
   table->_buffer[new_hash] = ptr;
+
+  return 0;
 }
 
 void hash_table_set_ptr(struct HashTable *restrict table, void *restrict key,
@@ -151,6 +153,8 @@ void *hash_table_get(struct HashTable *restrict table, void *restrict key) {
 void hash_table_free(struct HashTable *restrict table) {
   for (size_t i = 0; i < table->capacity; i++) {
     free(table->_buffer[i]);
+    table->_buffer[i] = NULL;
   }
   free((void *)table->_buffer);
+  table->_buffer = NULL;
 }
