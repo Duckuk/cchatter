@@ -28,7 +28,7 @@ void vec_from_array(struct vec *vec, size_t size_of_elements, void *array,
                     size_t array_len) {
   size_t capacity = MAX(array_len, DEFAULT_CAPACITY);
   vec->buf = malloc(size_of_elements * capacity);
-  memcpy(vec->buf, array, size_of_elements * MIN(array_len, vec->len));
+  memcpy(vec->buf, array, size_of_elements * MIN(array_len, capacity));
   vec->capacity = capacity;
   vec->len = array_len;
   vec->element_size = size_of_elements;
