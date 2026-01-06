@@ -26,7 +26,7 @@ size_t hash(void *restrict buf, size_t buf_size) {
   return hash_value;
 }
 
-#define TEST_SIZE (INT32_MAX / 5)
+#define TEST_SIZE (INT32_MAX / 5.0)
 double calculate_collision_rate() {
   ConnectionID buf;
   memset(buf, 0, sizeof buf);
@@ -53,8 +53,9 @@ double calculate_collision_rate() {
 
   free(test);
 
-  return collisions / (double)TEST_SIZE;
+  return collisions / TEST_SIZE;
 }
+#undef TEST_SIZE
 
 int hash_table_new(struct HashTable *restrict table, size_t key_size,
                    size_t element_size) {
