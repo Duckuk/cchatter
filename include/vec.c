@@ -15,6 +15,10 @@ void vec_new(struct vec *vec, size_t size_of_elements) {
 void vec_with_capacity(struct vec *vec, size_t size_of_elements,
                        size_t capacity) {
   vec->buf = malloc(size_of_elements * capacity);
+  if (vec->buf == NULL) {
+    perror("malloc");
+    exit(1);
+  }
   vec->capacity = capacity;
   vec->len = 0;
   vec->element_size = size_of_elements;
@@ -38,7 +42,7 @@ void vec_set_capacity(struct vec *vec, size_t new_capacity) {
 
   void *new_buf = realloc(vec->buf, vec->element_size * new_capacity);
   if (new_buf == NULL) {
-    fprintf(stderr, "Error: failed to set capacity of vec");
+    perror("realloc");
     exit(1);
   }
   vec->buf = new_buf;
