@@ -193,7 +193,7 @@ int server_loop(int socket_fd) {
     //
     // Wait for events to come through
     //
-    int num_events = poll(pollfds.buf, pollfds.len, -1);
+    int num_events = poll(pollfds._buf, pollfds.len, -1);
     if (num_events == -1) {
       perror("poll");
       return EXIT_FAILURE;
@@ -202,7 +202,7 @@ int server_loop(int socket_fd) {
     //
     // Accept incoming connection and push it to the lists
     //
-    if ((((struct pollfd *)pollfds.buf)[0].revents & POLLIN) != 0) {
+    if ((((struct pollfd *)vec_get(&pollfds, 0))->revents & POLLIN) != 0) {
       struct Connection c;
       accept_and_create_connection(&connections_table, &c, socket_fd);
       if (connection_table_add(&connections_table, &c) == -1) {
@@ -222,23 +222,23 @@ int server_loop(int socket_fd) {
       //
       // Process packet
       //
-      struct pollfd p = ((struct pollfd *)pollfds.buf)[i];
-      if ((p.revents & POLLIN) != 0) {
-        handle_message(&connections_table, p.fd);
+      struct pollfd *p = (struct pollfd *)vec_get(&pollfds, i);
+      if ((p->revents & POLLIN) != 0) {
+        handle_message(&connections_table, p->fd);
       }
 
       //
       // Queue connection for closing if they've hung up
       //
-      if ((p.revents & POLLRDHUP) != 0) {
+      if ((p->revents & POLLRDHUP) != 0) {
         struct CloseConnectionOperation op = {
             .pollfds_index = i,
             .connections_table_key =
-                connection_table_get_by_fd(&connections_table, p.fd)};
+                connection_table_get_by_fd(&connections_table, p->fd)};
         vec_push(&connections_to_close, &op);
       }
 
-      if (p.revents != 0) {
+      if (p->revents != 0) {
         num_events -= 1;
       }
     }

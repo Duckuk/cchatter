@@ -14,8 +14,8 @@ void vec_new(struct vec *vec, size_t size_of_elements) {
 
 void vec_with_capacity(struct vec *vec, size_t size_of_elements,
                        size_t capacity) {
-  vec->buf = malloc(size_of_elements * capacity);
-  if (vec->buf == NULL) {
+  vec->_buf = malloc(size_of_elements * capacity);
+  if (vec->_buf == NULL) {
     perror("malloc");
     exit(1);
   }
@@ -27,12 +27,12 @@ void vec_with_capacity(struct vec *vec, size_t size_of_elements,
 void vec_from_array(struct vec *vec, size_t size_of_elements, void *array,
                     size_t array_len) {
   size_t capacity = MAX(array_len, DEFAULT_CAPACITY);
-  vec->buf = malloc(size_of_elements * capacity);
-  if (vec->buf == NULL) {
+  vec->_buf = malloc(size_of_elements * capacity);
+  if (vec->_buf == NULL) {
     perror("malloc");
     exit(1);
   }
-  memcpy(vec->buf, array, size_of_elements * MIN(array_len, capacity));
+  memcpy(vec->_buf, array, size_of_elements * MIN(array_len, capacity));
   vec->capacity = capacity;
   vec->len = array_len;
   vec->element_size = size_of_elements;
@@ -44,12 +44,12 @@ void vec_set_capacity(struct vec *vec, size_t new_capacity) {
     exit(1);
   }
 
-  void *new_buf = reallocarray(vec->buf, new_capacity, vec->element_size);
+  void *new_buf = reallocarray(vec->_buf, new_capacity, vec->element_size);
   if (new_buf == NULL) {
     perror("reallocarray");
     exit(1);
   }
-  vec->buf = new_buf;
+  vec->_buf = new_buf;
   vec->capacity = new_capacity;
 }
 
@@ -59,7 +59,7 @@ void vec_push(struct vec *vec, void *element) {
   }
 
   size_t offset = vec->element_size * vec->len;
-  memcpy(vec->buf + offset, element, vec->element_size);
+  memcpy(vec->_buf + offset, element, vec->element_size);
   vec->len += 1;
 }
 
@@ -70,7 +70,7 @@ void vec_set(struct vec *vec, size_t index, void *element) {
   }
 
   size_t offset = vec->element_size * index;
-  memcpy(vec->buf + offset, element, vec->element_size);
+  memcpy(vec->_buf + offset, element, vec->element_size);
 }
 
 void *vec_get(struct vec *vec, size_t index) {
@@ -80,7 +80,7 @@ void *vec_get(struct vec *vec, size_t index) {
   }
 
   size_t offset = vec->element_size * index;
-  return vec->buf + offset;
+  return vec->_buf + offset;
 }
 
 void vec_remove(struct vec *vec, size_t index) {
@@ -95,12 +95,12 @@ void vec_remove(struct vec *vec, size_t index) {
   }
 
   size_t offset = vec->element_size * index;
-  memmove(vec->buf + offset, vec->buf + offset + vec->element_size,
+  memmove(vec->_buf + offset, vec->_buf + offset + vec->element_size,
           vec->element_size * (vec->len - index));
   vec->len -= 1;
 }
 
-void vec_free(struct vec *vec) { free(vec->buf); }
+void vec_free(struct vec *vec) { free(vec->_buf); }
 
 int vec_eq(struct vec *restrict vec1, struct vec *restrict vec2) {
   if (vec1->capacity != vec2->capacity) {
@@ -115,7 +115,7 @@ int vec_eq(struct vec *restrict vec1, struct vec *restrict vec2) {
     return 0;
   }
 
-  if (memcmp(vec1->buf, vec2->buf, vec1->element_size * vec1->len) != 0) {
+  if (memcmp(vec1->_buf, vec2->_buf, vec1->element_size * vec1->len) != 0) {
     return 0;
   }
 

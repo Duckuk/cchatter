@@ -18,14 +18,14 @@ int main() {
 
     int *buf1 = (int *)malloc(sizeof(test_array));
     memcpy(buf1, test_array, sizeof(test_array));
-    vec1.buf = buf1;
+    vec1._buf = buf1;
     vec1.capacity = 4;
     vec1.len = 4;
     vec1.element_size = sizeof(int);
 
     int *buf2 = (int *)malloc(sizeof(test_array));
     memcpy(buf2, test_array, sizeof(test_array));
-    vec2.buf = buf2;
+    vec2._buf = buf2;
     vec2.capacity = 4;
     vec2.len = 4;
     vec2.element_size = sizeof(int);
@@ -49,9 +49,9 @@ int main() {
     vec1.len -= 1;
 
     // Test buf check
-    ((int *)vec1.buf)[0] += 1;
+    ((int *)vec1._buf)[0] += 1;
     assert(vec_eq(&vec1, &vec2) == 0);
-    ((int *)vec1.buf)[0] -= 1;
+    ((int *)vec1._buf)[0] -= 1;
 
     vec_free(&vec1);
     vec_free(&vec2);
@@ -69,14 +69,14 @@ int main() {
 
     int *buf = (int *)malloc(sizeof(test_array));
     memcpy(buf, test_array, sizeof(test_array));
-    vector.buf = buf;
+    vector._buf = buf;
     vector.capacity = 4;
     vector.len = 4;
     vector.element_size = sizeof(int);
 
     vec_set_capacity(&vector, 8);
     assert(vector.capacity == 8);
-    memset(vector.buf, 0, vector.element_size * vector.capacity);
+    memset(vector._buf, 0, vector.element_size * vector.capacity);
 
     vec_free(&vector);
   }
@@ -91,11 +91,11 @@ int main() {
 
     struct vec actual_vector;
     vec_with_capacity(&actual_vector, sizeof(int), test_size);
-    memset(actual_vector.buf, 0, sizeof(int) * test_size);
+    memset(actual_vector._buf, 0, sizeof(int) * test_size);
 
     void *buf = malloc(sizeof(int) * test_size);
     memset(buf, 0, sizeof(int) * test_size);
-    struct vec ref_vector = {.buf = buf,
+    struct vec ref_vector = {._buf = buf,
                              .capacity = test_size,
                              .element_size = sizeof(int),
                              .len = 0};
@@ -121,7 +121,7 @@ int main() {
     struct vec ref_vector;
     void *buf = malloc(sizeof(test_array));
     memcpy(buf, test_array, sizeof(test_array));
-    ref_vector.buf = buf;
+    ref_vector._buf = buf;
     ref_vector.capacity = sizeof(test_array);
     ref_vector.element_size = sizeof(int);
     ref_vector.len = test_size;

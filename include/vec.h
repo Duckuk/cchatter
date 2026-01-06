@@ -4,9 +4,13 @@
 #include <stddef.h>
 
 struct vec {
-  void *buf;
+  // PRIVATE DO NOT TOUCH
+  void *_buf;
+  // READ-ONLY
   size_t capacity;
+  // READ-ONLY
   size_t len;
+  // READ-ONLY
   size_t element_size;
 };
 
