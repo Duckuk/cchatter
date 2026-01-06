@@ -258,7 +258,9 @@ int server_loop(int socket_fd) {
       close(connection_fd);
 
       vec_remove(&pollfds, pollfds_index);
-      connection_table_remove(&connections_table, connection);
+      if (connection_table_remove(&connections_table, connection) == -1) {
+        return EXIT_FAILURE;
+      };
 
       printf("closed connection for %s\n", id);
     }
