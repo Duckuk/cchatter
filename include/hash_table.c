@@ -57,8 +57,8 @@ double calculate_collision_rate() {
 }
 #undef TEST_SIZE
 
-int hash_table_new(struct HashTable *restrict table, size_t key_size,
-                   size_t element_size) {
+void hash_table_new(struct HashTable *restrict table, size_t key_size,
+                    size_t element_size) {
   memset(table, 0, sizeof *table);
 
   table->capacity = 1024;
@@ -69,46 +69,40 @@ int hash_table_new(struct HashTable *restrict table, size_t key_size,
 
   table->_buffer = (void **)calloc(sizeof(void *), table->capacity);
   if (table->_buffer == NULL) {
-    free((void *)table->_buffer);
-    return -1;
+    perror("calloc");
+    exit(1);
   }
-
-  return 0;
 }
 
-int hash_table_set(struct HashTable *restrict table, void *restrict key,
-                   void *restrict element) {
+void hash_table_set(struct HashTable *restrict table, void *restrict key,
+                    void *restrict element) {
   size_t hash = table->_hash_func(key, table->key_size) % table->capacity;
   if (table->_buffer[hash] != NULL) {
     fprintf(stderr, "hash table collisions not yet handled\n");
-    return -1;
+    exit(1);
   }
 
   table->_buffer[hash] = malloc(table->element_size);
   if (table->_buffer[hash] == NULL) {
-    fprintf(stderr, "hash table allocation failed\n");
-    return -1;
+    perror("malloc");
+    exit(1);
   }
   memcpy(table->_buffer[hash], element, table->element_size);
   table->len += 1;
-
-  return 0;
 }
 
-int hash_table_set_ptr(struct HashTable *restrict table, void *restrict key,
-                       void *restrict ptr) {
+void hash_table_set_ptr(struct HashTable *restrict table, void *restrict key,
+                        void *restrict ptr) {
   assert(ptr != NULL);
 
   size_t hash = table->_hash_func(key, table->key_size) % table->capacity;
   if (table->_buffer[hash] != NULL) {
     fprintf(stderr, "hash table collisions not yet handled\n");
-    return -1;
+    exit(1);
   }
 
   table->_buffer[hash] = ptr;
   table->len += 1;
-
-  return 0;
 }
 
 int hash_table_remove(struct HashTable *restrict table, void *restrict key) {

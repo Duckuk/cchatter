@@ -32,19 +32,16 @@ double calculate_collision_rate();
 
 // Initialize new hash table with default capacity (1024).
 // Return 0 on success, otherwise returns -1
-[[nodiscard]]
-int hash_table_new(struct HashTable *restrict table, size_t key_size,
-                   size_t element_size);
+void hash_table_new(struct HashTable *restrict table, size_t key_size,
+                    size_t element_size);
 // Set `key` to `element` in `table` via `memcpy`.
 // Return 0 on success, otherwise returns -1
-[[nodiscard]]
-int hash_table_set(struct HashTable *restrict table, void *restrict key,
-                   void *restrict element);
+void hash_table_set(struct HashTable *restrict table, void *restrict key,
+                    void *restrict element);
 // Set `key` to `element` in `table` via direct assignment to pointer.
 // Return 0 on success, otherwise returns -1
-[[nodiscard]]
-int hash_table_set_ptr(struct HashTable *restrict table, void *restrict key,
-                       void *restrict ptr);
+void hash_table_set_ptr(struct HashTable *restrict table, void *restrict key,
+                        void *restrict ptr);
 // Delete `key` from `table`.
 // Return 0 on success, otherwise returns -1
 [[nodiscard]]

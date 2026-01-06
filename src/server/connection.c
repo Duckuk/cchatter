@@ -1,33 +1,20 @@
 #include "connection.h"
 #include <string.h>
 
-int connection_table_new(struct ConnectionTable *table) {
+void connection_table_new(struct ConnectionTable *table) {
   memset(table, 0, sizeof *table);
-  if (hash_table_new(&table->table_by_id, sizeof(ConnectionID),
-                     sizeof(struct Connection)) == -1) {
-    return -1;
-  }
+  hash_table_new(&table->table_by_id, sizeof(ConnectionID),
+                 sizeof(struct Connection));
 
-  if (hash_table_new(&table->table_by_fd, sizeof(int),
-                     sizeof(struct Connection)) == -1) {
-    return -1;
-  }
-
-  return 0;
+  hash_table_new(&table->table_by_fd, sizeof(int), sizeof(struct Connection));
 }
-int connection_table_add(struct ConnectionTable *table,
-                         struct Connection *conn) {
-  if (hash_table_set(&table->table_by_id, conn->id, conn) == -1) {
-    return -1;
-  }
+void connection_table_add(struct ConnectionTable *table,
+                          struct Connection *conn) {
+  hash_table_set(&table->table_by_id, conn->id, conn);
 
   void *ptr = hash_table_get(&table->table_by_id, conn->id);
 
-  if (hash_table_set_ptr(&table->table_by_fd, &conn->socket_fd, ptr) == -1) {
-    return -1;
-  }
-
-  return 0;
+  hash_table_set_ptr(&table->table_by_fd, &conn->socket_fd, ptr);
 }
 int connection_table_remove(struct ConnectionTable *table,
                             struct Connection *conn) {

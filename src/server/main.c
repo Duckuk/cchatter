@@ -170,10 +170,7 @@ int server_loop(int socket_fd) {
   // vec_new(&connections_list, sizeof(struct Connection));
 
   struct ConnectionTable connections_table;
-  if (connection_table_new(&connections_table) == -1) {
-    perror("connection_table_new");
-    return EXIT_FAILURE;
-  }
+  connection_table_new(&connections_table);
 
   //
   // Create vector for sockets to poll
@@ -203,14 +200,12 @@ int server_loop(int socket_fd) {
     // Accept incoming connection and push it to the lists
     //
     if ((((struct pollfd *)vec_get(&pollfds, 0))->revents & POLLIN) != 0) {
-      struct Connection c;
-      accept_and_create_connection(&connections_table, &c, socket_fd);
-      if (connection_table_add(&connections_table, &c) == -1) {
-        return EXIT_FAILURE;
-      }
+      struct Connection new_conn;
+      accept_and_create_connection(&connections_table, &new_conn, socket_fd);
+      connection_table_add(&connections_table, &new_conn);
 
       struct pollfd p;
-      p.fd = c.socket_fd;
+      p.fd = new_conn.socket_fd;
       p.events = POLLIN | POLLRDHUP;
       p.revents = 0;
       vec_push(&pollfds, &p);
