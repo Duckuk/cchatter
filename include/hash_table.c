@@ -91,6 +91,25 @@ void hash_table_set(struct HashTable *restrict table, void *restrict key,
   table->len += 1;
 }
 
+int hash_table_move(struct HashTable *restrict table, void *restrict key,
+                    void *restrict new_key) {
+  void *ptr = hash_table_get(table, key);
+  size_t old_hash = table->_hash_func(key, table->key_size) % table->capacity;
+  if (table->_buffer[old_hash] == NULL) {
+    fprintf(stderr, "invalid hash table key\n");
+    return -1;
+  }
+
+  size_t new_hash =
+      table->_hash_func(new_key, table->key_size) % table->capacity;
+  if (table->_buffer[new_hash] != NULL) {
+    fprintf(stderr, "hash table collisions not yet handled\n");
+    return -1;
+  }
+  table->_buffer[old_hash] = NULL;
+  table->_buffer[new_hash] = ptr;
+}
+
 void hash_table_set_ptr(struct HashTable *restrict table, void *restrict key,
                         void *restrict ptr) {
   assert(ptr != NULL);

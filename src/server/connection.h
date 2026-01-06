@@ -19,12 +19,14 @@ struct ConnectionTable {
 };
 
 // Creates a new connection table.
-// Returns 0 on success, otherwise returns -1
 void connection_table_new(struct ConnectionTable *table);
 // Adds a new connection `conn` to `table` via `memcpy`.
-// Returns 0 on success, otherwise returns -1
 void connection_table_add(struct ConnectionTable *table,
                           struct Connection *conn);
+// Changes the `id` of `conn` to `id`.
+// Returns 0 on success, otherwise returns -1
+void connection_table_set_id(struct ConnectionTable *table,
+                             struct Connection *conn, ConnectionID id);
 // Removes a connection `conn` from `table`.
 // Returns 0 on success, otherwise returns -1
 [[nodiscard]]

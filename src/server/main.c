@@ -93,6 +93,7 @@ accept_and_create_connection(struct ConnectionTable *connections_table,
   // Generate random id and make sure it doesn't conflict with existing ID
   srandom(time(NULL));
   ConnectionID id;
+  memset(id, 0, sizeof id);
   while (1) {
     sprintf(id, "%.8lx", (unsigned long)random());
     if (connection_table_get_by_id(connections_table, id) == NULL) {
@@ -127,11 +128,15 @@ static int handle_message(struct ConnectionTable *connections_table, int fd) {
     }
 
     ConnectionID old_id;
+    memset(old_id, 0, sizeof old_id);
     memcpy(old_id, conn->id, sizeof old_id);
 
     printf("setting id of %s to %s\n", conn->id, id_data->new_id);
-    memcpy(conn->id, id_data->new_id, sizeof conn->id);
 
+    // Update connection table
+    connection_table_set_id(connections_table, conn, id_data->new_id);
+
+    // Acknowledge set id
     MessageContent content;
     sprintf(content, "set id from %s to %s", old_id, conn->id);
     send_message(fd, "server", conn->id, content);
