@@ -288,6 +288,8 @@ int main() {
     return EXIT_FAILURE;
   }
 
+  printf("started listening on %s:%s\n", ADDRESS, PORT);
+
   struct sigaction sa;
   sa.sa_handler = child_handler;
   sigemptyset(&sa.sa_mask);
