@@ -44,7 +44,7 @@ int hash_table_set(struct HashTable *restrict table, void *restrict key,
 // Return 0 on success, otherwise returns -1
 [[nodiscard]]
 int hash_table_set_ptr(struct HashTable *restrict table, void *restrict key,
-                       void *restrict element);
+                       void *restrict ptr);
 // Delete `key` from `table`.
 // Return 0 on success, otherwise returns -1
 [[nodiscard]]
