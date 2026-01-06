@@ -40,9 +40,9 @@ void vec_set_capacity(struct vec *vec, size_t new_capacity) {
     exit(1);
   }
 
-  void *new_buf = realloc(vec->buf, vec->element_size * new_capacity);
+  void *new_buf = reallocarray(vec->buf, new_capacity, vec->element_size);
   if (new_buf == NULL) {
-    perror("realloc");
+    perror("reallocarray");
     exit(1);
   }
   vec->buf = new_buf;
